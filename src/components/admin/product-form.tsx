@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { KitType, Size } from "@prisma/client";
 import { ALL_SIZES } from "@/lib/kit";
 
@@ -29,6 +29,8 @@ const emptyVariants: VariantInput[] = ALL_SIZES.map((size) => ({
   stock: 0,
 }));
 
+const PLACEHOLDER_IMAGE = "/products/placeholder.svg";
+
 function slugify(value: string): string {
   return value
     .toLowerCase()
@@ -38,8 +40,11 @@ function slugify(value: string): string {
 
 export function ProductForm({ mode, productId, initial }: Props) {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [previewBroken, setPreviewBroken] = useState(false);
   const [form, setForm] = useState(
     initial ?? {
       name: "",
@@ -48,12 +53,17 @@ export function ProductForm({ mode, productId, initial }: Props) {
       kitType: "HOME" as KitType,
       description: "",
       priceInRupees: "",
-      imageUrl: "/products/placeholder.svg",
+      imageUrl: PLACEHOLDER_IMAGE,
       trackInventory: true,
       active: true,
       variants: emptyVariants,
     },
   );
+
+  function setImageUrl(url: string) {
+    setPreviewBroken(false);
+    setForm((f) => ({ ...f, imageUrl: url }));
+  }
 
   function updateVariant(size: Size, stock: number) {
     setForm((f) => ({
@@ -62,6 +72,31 @@ export function ProductForm({ mode, productId, initial }: Props) {
         v.size === size ? { ...v, stock } : v,
       ),
     }));
+  }
+
+  async function onUpload(file: File | undefined) {
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Upload failed");
+        return;
+      }
+      setImageUrl(data.url as string);
+    } catch {
+      setError("Upload failed");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -75,7 +110,7 @@ export function ProductForm({ mode, productId, initial }: Props) {
       kitType: form.kitType,
       description: form.description,
       priceInPaise: Math.round(Number(form.priceInRupees) * 100),
-      imageUrl: form.imageUrl,
+      imageUrl: form.imageUrl.trim() || PLACEHOLDER_IMAGE,
       trackInventory: form.trackInventory,
       active: form.active,
       variants: form.variants,
@@ -117,6 +152,9 @@ export function ProductForm({ mode, productId, initial }: Props) {
     router.refresh();
   }
 
+  const previewSrc = form.imageUrl.trim();
+  const showPreview = Boolean(previewSrc) && !previewBroken;
+
   return (
     <form onSubmit={onSubmit} className="max-w-2xl space-y-4">
       {(
@@ -124,7 +162,6 @@ export function ProductForm({ mode, productId, initial }: Props) {
           ["name", "Name"],
           ["slug", "Slug"],
           ["club", "Club"],
-          ["imageUrl", "Image URL"],
         ] as const
       ).map(([key, label]) => (
         <label key={key} className="block text-sm">
@@ -146,10 +183,79 @@ export function ProductForm({ mode, productId, initial }: Props) {
               });
             }}
             className="mt-1 w-full border border-line bg-fog px-3 py-2"
-            required={key !== "imageUrl"}
+            required
           />
         </label>
       ))}
+
+      <fieldset className="space-y-3 border border-line p-4">
+        <legend className="px-1 text-sm font-medium text-ink">
+          Product image
+        </legend>
+        <p className="text-xs text-muted">
+          Paste an image URL or upload from your device. Either works; uploading
+          replaces the URL and vice versa.
+        </p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+          <div className="h-36 w-28 shrink-0 overflow-hidden border border-line bg-mist">
+            {showPreview ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={previewSrc}
+                alt="Product preview"
+                className="h-full w-full object-cover"
+                onError={() => setPreviewBroken(true)}
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center px-2 text-center text-xs text-muted">
+                No preview
+              </div>
+            )}
+          </div>
+          <div className="min-w-0 flex-1 space-y-3">
+            <label className="block text-sm">
+              <span className="text-muted">Image URL</span>
+              <input
+                type="text"
+                inputMode="url"
+                value={form.imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="https://… or /products/…"
+                className="mt-1 w-full border border-line bg-fog px-3 py-2"
+              />
+            </label>
+            <div>
+              <span className="text-sm text-muted">Upload</span>
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="block w-full max-w-sm text-sm text-muted file:mr-3 file:border file:border-line file:bg-fog file:px-3 file:py-1.5 file:text-sm file:text-ink"
+                  disabled={uploading || loading}
+                  onChange={(e) => onUpload(e.target.files?.[0])}
+                />
+                {uploading ? (
+                  <span className="text-xs text-muted">Uploading…</span>
+                ) : null}
+              </div>
+              <p className="mt-1 text-xs text-muted">
+                JPEG, PNG, or WebP · max 4.5 MB · camera or gallery on mobile
+              </p>
+            </div>
+            {form.imageUrl && form.imageUrl !== PLACEHOLDER_IMAGE ? (
+              <button
+                type="button"
+                onClick={() => setImageUrl(PLACEHOLDER_IMAGE)}
+                className="text-xs text-muted underline hover:text-ink"
+              >
+                Reset to placeholder
+              </button>
+            ) : null}
+          </div>
+        </div>
+      </fieldset>
+
       <label className="block text-sm">
         <span className="text-muted">Kit type</span>
         <select
@@ -233,7 +339,7 @@ export function ProductForm({ mode, productId, initial }: Props) {
       <div className="flex flex-wrap gap-3 pt-2">
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || uploading}
           className="bg-pitch px-5 py-2 text-sm font-semibold text-fog disabled:opacity-50"
         >
           {loading ? "Saving…" : "Save product"}
@@ -242,7 +348,7 @@ export function ProductForm({ mode, productId, initial }: Props) {
           <button
             type="button"
             onClick={onDelete}
-            disabled={loading}
+            disabled={loading || uploading}
             className="border border-danger px-5 py-2 text-sm text-danger"
           >
             Delete

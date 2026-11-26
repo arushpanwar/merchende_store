@@ -54,6 +54,7 @@ See `.env.example`.
 | `NEXTAUTH_SECRET` | Always | Random string |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google shopper sign-in | Leave empty to skip; guest checkout still works |
 | `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` / `NEXT_PUBLIC_RAZORPAY_KEY_ID` | Prepaid checkout | Leave empty to test COD only |
+| `BLOB_READ_WRITE_TOKEN` | Admin product image upload | Create a [Vercel Blob](https://vercel.com/docs/storage/vercel-blob) store, connect it to the project, and enable the read-write token env var. Paste-by-URL still works without it. |
 
 ## Features
 
@@ -61,7 +62,7 @@ See `.env.example`.
 - Catalog: club kits (home/away/third/special), sizes XS–XXL, no customization
 - Inventory: per-product tracked or non-tracked
 - Checkout: Razorpay prepaid (free shipping) or COD (₹70 shipping); guest or Google
-- Admin: products CRUD + stock, orders + status, customers list
+- Admin: products CRUD + stock, orders + status, customers list; product images via URL paste or file upload (Vercel Blob)
 
 ## Scripts
 
