@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#00b2a9"/>
+      <stop offset="100%" stop-color="#101412" stop-opacity="0.55"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="1000" fill="url(#g)"/>
+  <path d="M250 200h300v90c0 45-35 80-80 80h-140c-45 0-80-35-80-80v-90z" fill="#101412" opacity="0.95"/>
+  <path d="M220 200c-45 25-90 45-100 100v50c35-12 70-22 100-22v-128z" fill="#101412" opacity="0.75"/>
+  <path d="M580 200c45 25 90 45 100 100v50c-35-12-70-22-100-22v-128z" fill="#101412" opacity="0.75"/>
+  <circle cx="400" cy="430" r="54" fill="none" stroke="#f3f5f2" stroke-width="6" opacity="0.35"/>
+  <text x="400" y="880" text-anchor="middle" fill="#f3f5f2" font-family="Arial,sans-serif" font-size="28" letter-spacing="8" opacity="0.85">MERCHENDE</text>
+  <text x="400" y="920" text-anchor="middle" fill="#f3f5f2" font-family="Arial,sans-serif" font-size="18" opacity="0.55">CLUB KIT</text>
+</svg>

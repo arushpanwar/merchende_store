@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000">
+  <rect width="800" height="1000" fill="#0a3d2c"/>
+  <path d="M250 220h300v80c0 40-30 70-70 70h-160c-40 0-70-30-70-70v-80z" fill="#b8e23a" opacity=".9"/>
+  <path d="M220 220c-40 20-80 40-90 90v40c30-10 60-20 90-20v-110z" fill="#b8e23a" opacity=".7"/>
+  <path d="M580 220c40 20 80 40 90 90v40c-30-10-60-20-90-20v-110z" fill="#b8e23a" opacity=".7"/>
+  <rect x="300" y="360" width="200" height="420" rx="20" fill="#06281d"/>
+  <text x="400" y="900" text-anchor="middle" fill="#f3f5f2" font-family="Arial,sans-serif" font-size="36" letter-spacing="6">MERCHENDE</text>
+</svg>
