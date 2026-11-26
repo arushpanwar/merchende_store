@@ -66,9 +66,11 @@ See `.env.example`.
 ## Scripts
 
 - `npm run dev` — development server
-- `npm run build` / `npm start` — production
+- `npm run build` / `npm start` — production (`build` runs `prisma migrate deploy` then `next build`, so Vercel deploys apply pending migrations when `DATABASE_URL` is set)
 - `npm run db:seed` — re-seed admin + sample kits
 - `npx prisma studio` — browse DB
+
+**First prod deploy:** if the DB is empty and the app errors on missing tables (e.g. `Product`), either redeploy after this build script is on `main`, or run once manually: `npx prisma migrate deploy` (and optionally `npm run db:seed`) against prod `DATABASE_URL`.
 
 ## Local notes
 
